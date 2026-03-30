@@ -1,2 +1,2 @@
 # Computer-Organization-and-Architecture
- COA class word is added in this repository
+ COA class work is added in this repository
