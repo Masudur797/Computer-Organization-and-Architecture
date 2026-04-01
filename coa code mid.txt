@@ -1,0 +1,106 @@
+.MODEL SMALL
+.STACK 100H
+.DATA
+    NUM_MSG DB "Enter the number: $"
+    ALPHA_MSG DB "Enter the alphabet (A-Z or a-z): $"
+    OUTPUT_MSG DB "Output: $"
+    NEWLINE DB 0DH,0AH,"$"
+    VOWELS DB "AEIOUaeiou$"
+    BL_VAL DB 7       ; BL = 7
+.CODE
+MAIN PROC
+    MOV AX, @DATA
+    MOV DS, AX
+
+    ; ----------- Set BL = 7 -----------
+    MOV BL, 07H
+
+    ; ----------- Input Number -----------
+    MOV AH, 09H
+    LEA DX, NUM_MSG
+    INT 21H
+
+    MOV AH, 01H      ; Read character
+    INT 21H
+    SUB AL, '0'      ; Convert ASCII to number
+    MOV BH, AL       ; Store user number in BH
+
+    ; Newline
+    MOV AH, 09H
+    LEA DX, NEWLINE
+    INT 21H
+
+    ; ----------- Compare with BL ---------
+    MOV AL, BH
+    CMP AL, BL
+    JL LESS_NUM
+    JG GREATER_NUM
+    JE EQUAL_NUM
+
+LESS_NUM:
+    MOV DX, OFFSET OUTPUT_MSG
+    MOV AH, 09H
+    INT 21H
+    MOV AH, 09H
+    LEA DX, NEWLINE
+    INT 21H
+    ; Print message
+    MOV AH, 09H
+    LEA DX, NEWLINE
+    INT 21H
+    JMP CHECK_ALPHA
+
+GREATER_NUM:
+    MOV DX, OFFSET OUTPUT_MSG
+    MOV AH, 09H
+    INT 21H
+    MOV AH, 09H
+    LEA DX, NEWLINE
+    INT 21H
+    JMP CHECK_ALPHA
+
+EQUAL_NUM:
+    MOV DX, OFFSET OUTPUT_MSG
+    MOV AH, 09H
+    INT 21H
+    JMP CHECK_ALPHA
+
+    ; ----------- Input Alphabet -----------
+CHECK_ALPHA:
+    MOV AH, 09H
+    LEA DX, ALPHA_MSG
+    INT 21H
+
+    MOV AH, 01H
+    INT 21H
+    MOV CL, AL       ; Save alphabet in CL
+
+    ; ----------- Check Vowel -----------
+    MOV SI, OFFSET VOWELS
+CHECK_VOWEL_LOOP:
+    LODSB
+    CMP AL, CL
+    JE IS_VOWEL
+    CMP AL, '$'
+    JE IS_CONSONANT
+    JMP CHECK_VOWEL_LOOP
+
+IS_VOWEL:
+    ; Print vowel message
+    MOV AH, 09H
+    LEA DX, NEWLINE
+    INT 21H
+    JMP DONE
+
+IS_CONSONANT:
+    ; Print consonant message
+    MOV AH, 09H
+    LEA DX, NEWLINE
+    INT 21H
+    JMP DONE
+
+DONE:
+    MOV AH, 4CH
+    INT 21H
+MAIN ENDP
+END MAIN
