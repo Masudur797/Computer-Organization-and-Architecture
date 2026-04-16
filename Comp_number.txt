@@ -1,0 +1,43 @@
+.MODEL SMALL
+.STACK 100H
+
+.DATA
+
+.CODE
+MAIN PROC
+    MOV AX, @DATA
+    MOV DS, AX
+
+    ; Store values
+    MOV AX, 45      ; AX = 45
+    MOV BX, 30      ; BX = 30
+
+    ; Compare AX and BX
+    CMP AX, BX
+
+    ; Check conditions
+    JG AX_GREATER
+    JL BX_GREATER
+    JE EQUAL
+
+AX_GREATER:
+    MOV DL, 'A'     ; AX is greater
+    JMP DISPLAY
+
+BX_GREATER:
+    MOV DL, 'B'     ; BX is greater
+    JMP DISPLAY
+
+EQUAL:
+    MOV DL, 'E'     ; Equal
+
+DISPLAY:
+    MOV AH, 02H     ; Display character
+    INT 21H
+
+    ; Exit program
+    MOV AH, 4CH
+    INT 21H
+
+MAIN ENDP
+END MAIN
