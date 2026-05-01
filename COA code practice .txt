@@ -1,0 +1,471 @@
+1.Write an 8086 assembly language program that reads two single-digit numbers from the user.
+Compare the two numbers and display the larger number on the screen. If both numbers are equal, display the message "EQUAL". Use IF-THEN-ELSE structure with appropriate conditional jump instructions.
+
+solution:
+.MODEL SMALL
+.STACK 100H
+
+.DATA
+    msg1 DB "Enter first number: $"
+    msg2 DB 0DH,0AH,"Enter second number: $"
+    equalMsg DB 0DH,0AH,"EQUAL$"
+
+.CODE
+MAIN PROC
+    MOV AX, @DATA
+    MOV DS, AX
+
+    ; -------- First Input --------
+    MOV AH, 09H
+    LEA DX, msg1
+    INT 21H
+
+    MOV AH, 01H
+    INT 21H
+    SUB AL, 30H        ; ASCII → number
+    MOV BL, AL         ; store first number in BL
+
+    ; -------- Second Input --------
+    MOV AH, 09H
+    LEA DX, msg2
+    INT 21H
+
+    MOV AH, 01H
+    INT 21H
+    SUB AL, 30H        ; ASCII → number
+    MOV BH, AL         ; store second number in BH
+
+    ; -------- Compare --------
+    CMP BL, BH
+    JG FIRST_GREATER
+    JL SECOND_GREATER
+    JE EQUAL_CASE
+
+FIRST_GREATER:
+    MOV DL, BL
+    ADD DL, 30H        ; number → ASCII
+    JMP DISPLAY
+
+SECOND_GREATER:
+    MOV DL, BH
+    ADD DL, 30H
+    JMP DISPLAY
+
+EQUAL_CASE:
+    MOV AH, 09H
+    LEA DX, equalMsg
+    INT 21H
+    JMP EXIT
+
+DISPLAY:
+    MOV AH, 02H
+    INT 21H
+
+EXIT:
+    MOV AH, 4CH
+    INT 21H
+
+MAIN ENDP
+END MAIN
+
+
+
+
+
+
+
+2/Write an 8086 assembly language program that reads characters from the keyboard one by one using a WHILE loop. The program should count the total number of vowels (a, e, o, o, - both uppercase and lowercase) entered by the user. The loop should terminate when the user presses Enter. Display the count 
+as a digit at the end.
+
+
+
+
+solution:
+.MODEL SMALL
+.STACK 100H
+
+.DATA
+    msg DB 0DH,0AH,"Vowel count: $"
+
+.CODE
+MAIN PROC
+    MOV AX, @DATA
+    MOV DS, AX
+
+    MOV CL, 0          ; vowel counter = 0
+
+    ; ---- first input before WHILE ----
+    MOV AH, 01H
+    INT 21H            ; AL = character
+
+WHILE_:
+    CMP AL, 0DH        ; Enter key (carriage return)?
+    JE END_WHILE
+
+    ; ---- check vowel ----
+    CMP AL, 'a'
+    JE VOWEL
+    CMP AL, 'A'
+    JE VOWEL
+
+    CMP AL, 'e'
+    JE VOWEL
+    CMP AL, 'E'
+    JE VOWEL
+
+    CMP AL, 'i'
+    JE VOWEL
+    CMP AL, 'I'
+    JE VOWEL
+
+    CMP AL, 'o'
+    JE VOWEL
+    CMP AL, 'O'
+    JE VOWEL
+
+    CMP AL, 'u'
+    JE VOWEL
+    CMP AL, 'U'
+    JE VOWEL
+
+    JMP NEXT
+
+VOWEL:
+    INC CL             ; count++
+
+NEXT:
+    ; ---- read next character ----
+    MOV AH, 01H
+    INT 21H
+    JMP WHILE_
+
+END_WHILE:
+
+    ; ---- display message ----
+    MOV AH, 09H
+    LEA DX, msg
+    INT 21H
+
+    ; ---- display count ----
+    MOV DL, CL
+    ADD DL, 30H        ; number → ASCII
+    MOV AH, 02H
+    INT 21H
+
+    ; ---- exit ----
+    MOV AH, 4CH
+    INT 21H
+
+MAIN ENDP
+END MAIN
+
+
+
+Q3. Write an 8086 assembly language program that reads a lowercase letter from the keyboard and converts it to uppercase using the AND instruction with an appropriate bit mask. Display the converted uppercase letter on the screen. Also, using the TEST instriction, check whether the original character was a vowel in its uppercase form and display 'V' if it is a vowel or 'C' if it is a consonant.
+
+solve:
+
+.MODEL SMALL
+.STACK 100H
+
+.DATA
+    msgU DB 0DH,0AH,"Uppercase: $"
+    msgV DB 0DH,0AH,"V$"
+    msgC DB 0DH,0AH,"C$"
+
+.CODE
+MAIN PROC
+    MOV AX, @DATA
+    MOV DS, AX
+
+    ; -------- Read character --------
+    MOV AH, 01H
+    INT 21H            ; AL = input (lowercase)
+
+    ; -------- Convert to uppercase using AND --------
+    AND AL, 11011111B  ; clear bit 5 → uppercase
+    MOV BL, AL         ; save uppercase
+
+    ; -------- Display uppercase --------
+    MOV AH, 09H
+    LEA DX, msgU
+    INT 21H
+
+    MOV DL, BL
+    MOV AH, 02H
+    INT 21H
+
+    ; -------- Vowel check using TEST --------
+    ; A = 41h, E = 45h, I = 49h, O = 4Fh, U = 55h
+
+    MOV AL, BL
+
+    CMP AL, 'A'
+    JE VOWEL
+    CMP AL, 'E'
+    JE VOWEL
+    CMP AL, 'I'
+    JE VOWEL
+    CMP AL, 'O'
+    JE VOWEL
+    CMP AL, 'U'
+    JE VOWEL
+
+    ; -------- Consonant --------
+    MOV AH, 09H
+    LEA DX, msgC
+    INT 21H
+    JMP EXIT
+
+VOWEL:
+    MOV AH, 09H
+    LEA DX, msgV
+    INT 21H
+
+EXIT:
+    MOV AH, 4CH
+    INT 21H
+
+MAIN ENDP
+END MAIN
+
+
+
+                                                                part B               -------------------------------------------------------------
+
+
+
+
+
+
+
+Q1. Write an 8086 assembly language program that reads a single digit (1-5) from the keyboard and displays a corresponding day name using a CASE structure. Specifically: 1 → "MON", 2 → "TUE", 3 →
+"WED", 4 → "THU", 5 → "FRI". If the input is any other character, display "INVALID". Use CMP and appropnate jump instructions to implement the CASE structure.
+
+solve:
+.MODEL SMALL
+.STACK 100H
+
+.DATA
+    msg DB "Enter a digit (1-5): $"
+    mon DB 0DH,0AH,"MON$"
+    tue DB 0DH,0AH,"TUE$"
+    wed DB 0DH,0AH,"WED$"
+    thu DB 0DH,0AH,"THU$"
+    fri DB 0DH,0AH,"FRI$"
+    invalid DB 0DH,0AH,"INVALID$"
+
+.CODE
+MAIN PROC
+    MOV AX, @DATA
+    MOV DS, AX
+
+    ; -------- Input --------
+    MOV AH, 09H
+    LEA DX, msg
+    INT 21H
+
+    MOV AH, 01H
+    INT 21H        ; AL = ASCII input
+
+    ; -------- CASE structure --------
+    CMP AL, '1'
+    JE MONDAY
+
+    CMP AL, '2'
+    JE TUESDAY
+
+    CMP AL, '3'
+    JE WEDNESDAY
+
+    CMP AL, '4'
+    JE THURSDAY
+
+    CMP AL, '5'
+    JE FRIDAY
+
+    ; -------- Default --------
+    JMP INVALID_CASE
+
+MONDAY:
+    MOV AH, 09H
+    LEA DX, mon
+    INT 21H
+    JMP EXIT
+
+TUESDAY:
+    MOV AH, 09H
+    LEA DX, tue
+    INT 21H
+    JMP EXIT
+
+WEDNESDAY:
+    MOV AH, 09H
+    LEA DX, wed
+    INT 21H
+    JMP EXIT
+
+THURSDAY:
+    MOV AH, 09H
+    LEA DX, thu
+    INT 21H
+    JMP EXIT
+
+FRIDAY:
+    MOV AH, 09H
+    LEA DX, fri
+    INT 21H
+    JMP EXIT
+
+INVALID_CASE:
+    MOV AH, 09H
+    LEA DX, invalid
+    INT 21H
+
+EXIT:
+    MOV AH, 4CH
+    INT 21H
+
+MAIN ENDP
+END MAIN
+
+
+
+2)Write an 8086 assembly language program that: uses count controlled for loop to print the  
+uppercase letters of the English alphabet (A to Z) on the screen, each separated by a space. Use the LOOP
+
+instruction with CX as the counter. Initialize CX to 26 and use DL to hold the ASCII value of the current letter starting from 'A'
+
+Solve:
+
+.MODEL SMALL
+.STACK 100H
+
+.DATA
+    space DB ' $'
+
+.CODE
+MAIN PROC
+    MOV AX, @DATA
+    MOV DS, AX
+
+    MOV CX, 26        ; loop কাউন্ট (A–Z = 26 letters)
+    MOV DL, 'A'       ; প্রথম অক্ষর
+
+PRINT_LOOP:
+    ; print letter
+    MOV AH, 02H
+    INT 21H
+
+    ; print space
+    MOV AH, 09H
+    LEA DX, space
+    INT 21H
+
+    INC DL            ; next letter (A→B→C...)
+
+    LOOP PRINT_LOOP   ; CX--, যদি 0 না হয় আবার loop
+
+    ; exit
+    MOV AH, 4CH
+    INT 21H
+
+MAIN ENDP
+END MAIN
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Q3. Write an 8086 assembly language program that:
+
+(a) Takes the value 5 and multiplies it by 8 using only the SHL (shift left) instruction. Store the result in BX and display it as a two-digit hexadecimal value.
+
+(b) Then divide that result by 4 using the SHR (shift right) instruction. Store the result in CX.
+
+Finally, display BX and CX separated by a space.
+(Do NOT use MUL or DIV instructions)
+
+solve:
+.MODEL SMALL
+.STACK 100H
+
+.DATA
+    space DB " $"
+
+.CODE
+MAIN PROC
+    MOV AX, @DATA
+    MOV DS, AX
+
+    ; -------- Part (a): 5 * 8 --------
+    MOV BX, 5
+    SHL BX, 1      ; *2
+    SHL BX, 1      ; *4
+    SHL BX, 1      ; *8 → BX = 40 decimal = 28h
+
+    ; -------- Display BX (hex) --------
+    MOV DL, BH     ; high byte
+    CALL PRINT_HEX
+
+    MOV DL, BL     ; low byte
+    CALL PRINT_HEX
+
+    ; -------- Print space --------
+    MOV AH, 09H
+    LEA DX, space
+    INT 21H
+
+    ; -------- Part (b): divide by 4 --------
+    MOV CX, BX
+    SHR CX, 1      ; /2
+    SHR CX, 1      ; /4 → CX = 10 decimal = 0Ah
+
+    ; -------- Display CX (hex) --------
+    MOV DL, CH
+    CALL PRINT_HEX
+
+    MOV DL, CL
+    CALL PRINT_HEX
+
+    ; -------- Exit --------
+    MOV AH, 4CH
+    INT 21H
+
+; -------- HEX PRINT PROCEDURE --------
+PRINT_HEX PROC
+    MOV AL, DL
+    SHR AL, 4          ; high nibble
+    CALL PRINT_DIGIT
+
+    MOV AL, DL
+    AND AL, 0FH        ; low nibble
+    CALL PRINT_DIGIT
+    RET
+PRINT_HEX ENDP
+
+PRINT_DIGIT PROC
+    CMP AL, 9
+    JBE NUM
+    ADD AL, 7          ; A-F adjust
+
+NUM:
+    ADD AL, 30H
+    MOV DL, AL
+    MOV AH, 02H
+    INT 21H
+    RET
+PRINT_DIGIT ENDP
+
+MAIN ENDP
+END MAIN
+
